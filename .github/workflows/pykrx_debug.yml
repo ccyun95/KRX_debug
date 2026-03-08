@@ -1,0 +1,56 @@
+name: pykrx API debug
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "종목코드 6자리"
+        required: true
+        default: "005930"
+      start_date:
+        description: "시작일 YYYYMMDD"
+        required: true
+        default: "20260219"
+      end_date:
+        description: "종료일 YYYYMMDD"
+        required: true
+        default: "20260306"
+      investor_on:
+        description: "투자자 거래량 기준"
+        required: true
+        default: "순매수"
+        type: choice
+        options:
+          - 순매수
+          - 매도
+          - 매수
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install only debug dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pykrx pandas
+
+      - name: Run standalone pykrx debug script
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python scripts/debug_pykrx_api.py \
+            --ticker "${{ github.event.inputs.ticker }}" \
+            --start "${{ github.event.inputs.start_date }}" \
+            --end "${{ github.event.inputs.end_date }}" \
+            --investor-on "${{ github.event.inputs.investor_on }}"
